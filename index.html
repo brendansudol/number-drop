@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#faf8ef">
+  <meta name="description" content="Little numbers. Big possibilities. A happy little game about dropping, matching, and doubling numbers.">
+  <title>Number Drop — Little numbers. Big possibilities.</title>
+  <link rel="icon" href="icon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="style.css">
+  <script defer src="vendor/matter.min.js"></script>
+  <script defer src="game.js"></script>
+</head>
+<body>
+  <div class="page">
+    <header class="header">
+      <a class="brand" href="./" aria-label="Number Drop home"><span class="brand-icon">2<span>••</span></span><span>number<span class="brand-light">drop</span><small>LITTLE NUMBERS. BIG POSSIBILITIES.</small></span></a>
+      <div class="header-tools">
+        <button class="icon-button" id="sound" aria-label="Turn sound on" aria-pressed="false" title="Turn sound on"><svg viewBox="0 0 24 24"><path d="m11 5-6 5H2v4h3l6 5zM17 9l5 6m0-6-5 6"/></svg></button>
+        <button class="icon-button" id="help" aria-label="How to play" title="How to play"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M9.5 9a2.5 2.5 0 1 1 4 2c-1 .6-1.5 1-1.5 2.5M12 17h.01"/></svg></button>
+      </div>
+    </header>
+
+    <main class="layout">
+      <section class="game-card" aria-label="Number Drop game">
+        <div class="scorebar">
+          <div class="stat"><span class="eyebrow">SCORE</span><strong id="score">0</strong></div>
+          <div class="stat best"><span class="eyebrow"><svg viewBox="0 0 24 24"><path d="M8 3h8v7a4 4 0 0 1-8 0zM8 5H4v3a4 4 0 0 0 4 4m8-7h4v3a4 4 0 0 1-4 4m-4 2v5m-4 2h8"/></svg> PERSONAL BEST</span><strong id="best">0</strong></div>
+          <div class="next"><span class="eyebrow">UP NEXT</span><canvas id="next" width="120" height="120" aria-label="Next number: 4"></canvas></div>
+        </div>
+        <div class="toolbar">
+          <label class="range-label"><span class="sr-only">Numbers to drop</span><select id="range" aria-label="Numbers to drop"><option value="5">Numbers 1–5</option><option value="10" selected>Numbers 1–10</option><option value="20">Numbers 1–20</option></select><svg viewBox="0 0 24 24"><path d="m8 10 4 4 4-4"/></svg></label>
+          <button id="mode" class="mode-button" aria-label="Unlimited play. Change game mode." title="Change game mode"><span>∞</span> Unlimited play</button>
+          <div class="game-tools"><button id="pause" class="small-button" aria-label="Pause game" title="Pause game"><svg viewBox="0 0 24 24"><path d="M8 5v14M16 5v14"/></svg></button><button id="restart" class="small-button" aria-label="Start a new game" title="New game"><svg viewBox="0 0 24 24"><path d="M4 9a8 8 0 1 1 0 6m0-11v5h5"/></svg></button></div>
+        </div>
+        <div class="board-wrap" id="board-wrap">
+          <canvas id="board" width="960" height="1080" tabindex="0" aria-label="Game board. Move with arrow keys, then press Space to drop. Matching numbers double."></canvas>
+          <div class="board-tip" id="board-tip"><span class="tiny-star">✦</span><h1>Good things come in doubles.</h1><p>Move to aim. Tap to drop.<br>Match two numbers and watch them grow.</p><span class="first-hint">Start with 2 + 2 <span>↓</span></span></div>
+          <div class="board-overlay" id="pause-overlay" hidden><span class="overlay-mark">Ⅱ</span><h2>A little breather.</h2><p>Your numbers will be right here.</p><button class="primary" id="resume">Keep playing <span>→</span></button></div>
+          <div class="board-overlay" id="end-overlay" hidden><span class="overlay-mark">✦</span><h2>Look how you grew!</h2><p id="end-summary"></p><button class="primary" id="play-again">Play again <span>↻</span></button></div>
+          <div class="merge-message" id="merge-message" aria-hidden="true"></div>
+        </div>
+        <div class="dropbar"><span id="drop-hint"><span class="keyboard">←</span><span class="keyboard">→</span> aim <span class="keyboard space">space</span> drop</span><button class="drop-button" id="drop"><svg viewBox="0 0 24 24"><path d="M12 4v15m-6-6 6 6 6-6"/></svg> Drop <span id="drop-value">2</span></button></div>
+      </section>
+
+      <aside class="sidebar">
+        <section class="intro-note"><span class="section-kicker"><span class="green-dot"></span> A LITTLE PLAY. A LOT OF DISCOVERY.</span><h2>Small numbers.<br><span>Wonderful things.</span></h2><p>No rush. No wrong answers.<br>Just a happy little world of doubles.</p></section>
+        <section class="discovery-card"><div class="card-heading"><h3>Your next discovery</h3><span>✧</span></div><div class="discovery-number" id="discovery-number">4<span class="eyes"><i></i><i></i></span></div><div class="equation" id="discovery-equation"><span>2</span> + <span>2</span> = <strong>4</strong></div><p id="discovery-copy">Bring two 2s together.</p><div class="progress-dots" id="progress-dots" aria-label="Discovery progress"></div></section>
+        <section class="how-card"><h3>A little guide</h3><ol><li><span>1</span><p><strong>Find your spot.</strong> Move left or right to aim.</p></li><li><span>2</span><p><strong>Let it drop.</strong> Tap the board or press Drop.</p></li><li><span>3</span><p><strong>Make a double!</strong> Matching numbers become one.</p></li></ol><div class="mini-equation"><span class="mini-block coral">2</span><b>+</b><span class="mini-block coral">2</span><b>=</b><span class="mini-block green">4</span><span class="spark">✧</span></div></section>
+        <div class="session-note"><svg viewBox="0 0 24 24"><path d="m12 3 2.7 5.5 6.1.9-4.4 4.3 1 6.1-5.4-2.9-5.4 2.9 1-6.1L2.2 9.4l6.1-.9z"/></svg><span>Biggest number <strong id="biggest">2</strong></span></div>
+      </aside>
+    </main>
+    <footer><span>Made for curious little minds <span class="heart">♡</span></span><span>Drop. Match. Double. <span class="footer-spark">✦</span></span></footer>
+  </div>
+
+  <dialog id="dialog"><button class="dialog-close icon-button" aria-label="Close dialog">×</button><div id="dialog-content"></div></dialog>
+  <div class="toast" id="toast" role="status"></div>
+  <span class="sr-only" id="announcer" aria-live="polite"></span>
+</body>
+</html>
