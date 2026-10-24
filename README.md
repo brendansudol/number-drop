@@ -10,7 +10,7 @@ A playful number-doubling game with bouncing characters, chain merges, and mobil
 - On a keyboard, use the left/right arrows and press Space while the board is focused. Press P to pause.
 - Matching numbers combine into their double: **2 + 2 = 4**, then **4 + 4 = 8**. Each merge earns ten times the new number in points.
 - **Unlimited play** makes room at the bottom when the board fills. **Challenge** ends when a settled number stays above the dotted line.
-- Choose drops from 1–5, 1–10, or 1–20. Your game and personal best are saved in this browser, on this device.
+- Choose drops from 1–5, 1–10, 1–11, or 1–20. Your game and personal best are saved in this browser, on this device.
 
 ## Run locally
 

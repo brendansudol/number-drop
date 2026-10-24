@@ -12,7 +12,7 @@
   const engine = Engine.create({ enableSleeping: true, positionIterations: 8, velocityIterations: 8 });
   engine.gravity.y = 1.15;
   let score = 0, best = Number(prefs.best) || 0, biggest = 2, drops = 0;
-  let max = [5,10,20].includes(prefs.max) ? prefs.max : 10;
+  let max = [5,10,11,20].includes(prefs.max) ? prefs.max : 10;
   let mode = prefs.mode === 'challenge' ? 'challenge' : 'unlimited';
   let sound = prefs.sound === true, paused = false, gameOver = false, modalPaused = false;
   let current = 2, next = 4, aim = W / 2, simTime = 0, cooldown = 0;
