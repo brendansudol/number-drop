@@ -4,7 +4,7 @@
   const $ = id => document.getElementById(id);
   const canvas = $('board'), ctx = canvas.getContext('2d');
   const W = 480, H = 540, LINE = 99, STORAGE = 'number-drop-v1';
-  const palette = [null, ['#eaa66a','#d98248'], ['#ef947d','#df6c54'], ['#efd46f','#d5ac38'], ['#a5cc8b','#75a760'], ['#83c8c7','#4a9e9b'], ['#b4a0d5','#8a6bb4'], ['#df9bb4','#bb6e92'], ['#efb26f','#d78d3b'], ['#9eafc8','#788ba6'], ['#91b9a1','#628f76']];
+  const palette = [null, ['#eaa66a','#d98248'], ['#ef947d','#df6c54'], ['#efd46f','#d5ac38'], ['#a5cc8b','#75a760'], ['#83c8c7','#4a9e9b'], ['#b4a0d5','#8a6bb4'], ['#df9bb4','#bb6e92'], ['#efb26f','#d78d3b'], ['#9eafc8','#788ba6'], ['#91b9a1','#628f76'], ['#f3a34f','#dc7a2c'], ['#ed746c','#d74747']];
   const roundFont = '"Nunito", "Arial Rounded MT Bold", sans-serif';
   const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
   let prefs = {};
@@ -12,7 +12,7 @@
   const engine = Engine.create({ enableSleeping: true, positionIterations: 8, velocityIterations: 8 });
   engine.gravity.y = 1.15;
   let score = 0, best = Number(prefs.best) || 0, biggest = 2, drops = 0;
-  let max = [5,10,11,20].includes(prefs.max) ? prefs.max : 10;
+  let max = [5,10,11,12,20].includes(prefs.max) ? prefs.max : 10;
   let mode = prefs.mode === 'challenge' ? 'challenge' : 'unlimited';
   let sound = prefs.sound === true, paused = false, gameOver = false, modalPaused = false;
   let current = 2, next = 4, aim = W / 2, simTime = 0, cooldown = 0;
@@ -20,7 +20,7 @@
   let pendingMerge = new Set(), lastMergeAt = -9999, combo = 0, lastAnnounce = 0;
   let audio, toastTimer, messageTimer, savedAt = 0;
 
-  function colors(n) { return palette[n <= 10 ? n : 1 + (Math.floor(Math.log2(n)) * 3 + n) % 10]; }
+  function colors(n) { return palette[n <= 12 ? n : 1 + (Math.floor(Math.log2(n)) * 3 + n) % 10]; }
   function radius(n) { return Math.min(48, 22 + Math.log2(n) * 2.15); }
   function clampX(x, n = current) { const r = radius(n); return Math.max(r + 7, Math.min(W - r - 7, x)); }
   function save() {
