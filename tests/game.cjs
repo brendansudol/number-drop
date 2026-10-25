@@ -23,3 +23,32 @@ game.el('range').value='5';game.el('range').listeners.change();assert.ok(game.st
 const full=[];for(let row=0;row<9;row++)for(let col=0;col<7;col++)full.push({n:11+row*7+col,x:36+col*68,y:503-row*64});
 const challenge=boot({mode:'challenge',session:session(full)});challenge.step(600);assert.equal(challenge.el('end-overlay').hidden,false);assert.equal(challenge.el('drop').disabled,true);console.log('PASS: sustained overflow ends Challenge and disables Drop');
 const unlimited=boot({mode:'unlimited',session:session(full)});unlimited.step(180);const oldCount=unlimited.state().session.pieces.length;unlimited.click('drop');assert.ok(unlimited.state().session.pieces.length<oldCount);assert.equal(unlimited.el('end-overlay').hidden,true);console.log('PASS: Unlimited mode clears bottom pieces to keep play going');
+
+const seasonal=boot(game.state()),beforeSeason=seasonal.state().session;
+seasonal.click('halloween');
+assert.equal(seasonal.el('halloween').attrs['aria-pressed'],'true');
+assert.deepEqual(seasonal.state().session,beforeSeason);
+const seasonalReload=boot(seasonal.state());
+assert.equal(seasonalReload.el('halloween').attrs['aria-pressed'],'true');
+seasonalReload.click('halloween');
+assert.equal(seasonalReload.state().halloween,false);
+assert.deepEqual(seasonalReload.state().session,beforeSeason);
+console.log('PASS: Halloween toggles without losing progress and persists across reloads');
+
+const pumpkinGame=boot({halloween:true});
+pumpkinGame.click('drop');pumpkinGame.step();pumpkinGame.click('drop');pumpkinGame.step();
+assert.equal(pumpkinGame.state().session.score,120);
+assert.deepEqual(pumpkinGame.state().session.pieces.map(p=>p.n),[8]);
+console.log('PASS: pumpkins merge 2+2→4 and 4+4→8 with the same scoring');
+
+const rollingSession=session([{n:8,x:240,y:510,angle:0},{n:3,x:260,y:400,angle:0}]);
+const classicRoll=boot({session:rollingSession}),pumpkinRoll=boot({session:rollingSession});
+pumpkinRoll.click('halloween');classicRoll.step();pumpkinRoll.step();
+const classicThree=classicRoll.state().session.pieces.find(p=>p.n===3);
+const pumpkinThree=pumpkinRoll.state().session.pieces.find(p=>p.n===3);
+assert.ok(pumpkinThree.x>classicThree.x+5,'Pumpkins should travel farther after a glancing collision');
+assert.ok(pumpkinThree.angle>classicThree.angle+.25,'Pumpkins should roll more after a glancing collision');
+const restoredPhysics=boot({halloween:true,session:rollingSession});
+restoredPhysics.click('halloween');restoredPhysics.step();
+assert.deepEqual(restoredPhysics.state().session.pieces,classicRoll.state().session.pieces);
+console.log('PASS: existing pieces roll farther in Halloween mode; switching off restores classic physics');

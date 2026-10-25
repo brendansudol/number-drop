@@ -4,3 +4,44 @@
 @media(min-width:1100px) and (max-height:900px){.page{max-width:930px}.header{height:88px;margin-bottom:22px}.layout{grid-template-columns:minmax(0,550px) 1fr;gap:34px}#board{aspect-ratio:480 / 450}.intro-note h2{font-size:26px}.intro-note p{margin-bottom:20px}.discovery-card{padding:16px}.discovery-number{margin:18px auto 16px}.how-card{padding-top:22px}footer{margin-top:23px}}
 @media(max-width:760px){.page{width:min(510px,calc(100% - 24px))}.header{height:86px;margin-bottom:18px}.brand{font-size:27px;gap:11px}.brand small{font-size:6.5px;letter-spacing:1.2px}.brand-icon{width:36px;height:43px;font-size:29px;border-radius:12px}.brand-icon span{left:11px;font-size:11px;bottom:4px}.header-tools{gap:7px}.icon-button{width:36px;height:36px;border-radius:12px}.icon-button svg{width:18px;height:18px}.layout{display:block}.game-card{padding:11px 11px 10px;border-radius:22px}.scorebar{height:62px;gap:25px;padding-left:4px;padding-right:2px}.stat strong{font-size:27px}.eyebrow{font-size:8px;letter-spacing:1.2px}.best .eyebrow{font-size:7px;letter-spacing:.8px}.next{padding-left:10px;height:51px;gap:0}.next canvas{width:44px;height:44px}.next .eyebrow{font-size:7px;letter-spacing:.6px}.toolbar{gap:10px;padding:9px 1px 11px}.range-label select{font-size:10px;padding-left:9px}.mode-button{font-size:9px;gap:4px}.mode-button>span{font-size:18px}.game-tools{gap:5px}.small-button{width:29px;height:29px;padding:5px}.board-wrap{border-radius:15px}#board{aspect-ratio:480 / 580;max-height:calc(100svh - 270px);min-height:320px}.board-tip h1{font-size:20px}.board-tip p{font-size:11px}.board-tip{top:33%}.first-hint{margin-top:23px}.dropbar{padding-top:12px}#drop-hint{font-size:10px;display:block}.drop-button{padding:10px 23px;font-size:13px}.sidebar{padding-top:26px;display:grid;grid-template-columns:1fr 1fr;gap:15px}.intro-note{display:none}.discovery-card{padding:15px 12px}.card-heading h3{font-size:10px}.discovery-number{margin:20px auto 17px;width:54px;height:64px;font-size:38px;border-radius:16px}.eyes{left:19px;bottom:6px;gap:7px}.eyes i{width:5px;height:6px}.equation{font-size:18px;gap:8px}.discovery-card p{font-size:9px}.how-card{padding:4px 2px 0}.how-card h3{font-size:11px}.how-card ol{gap:12px;margin:16px 0}.how-card li{gap:7px}.how-card li p{font-size:9px}.how-card li strong{font-size:10px}.how-card li>span{width:17px;height:17px;line-height:17px;font-size:9px}.mini-equation{padding:11px 4px;gap:6px}.mini-block{width:23px;height:27px;font-size:19px;border-radius:7px}.mini-equation b{font-size:11px}.spark{font-size:18px}.session-note{grid-column:1/-1;margin-top:0}footer{font-size:8px;margin-top:24px}.merge-message{font-size:18px;padding:8px 14px}}
 @media(prefers-reduced-motion:reduce){*,*:before,*:after{transition:none!important;scroll-behavior:auto!important}}
+
+/* A seasonal switch that works with either game mode. */
+.season-bar{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:0 3px 12px}
+.season-bar>span{font-size:10px;color:#8a796d}
+.season-toggle{display:inline-flex;align-items:center;gap:7px;flex:none;padding:6px 9px;border:1px solid #e5d4bd;border-radius:20px;background:#fff8eb;color:#865835;font-size:11px;font-weight:700}
+.season-toggle svg{width:18px;height:18px;color:#c67536}
+.season-toggle:hover{background:#fcebd2}
+.season-state{border-radius:10px;background:#eae5dc;color:#746f66;padding:2px 6px;font-size:9px;min-width:27px;text-align:center}
+.season-toggle[aria-pressed=true]{background:#fbe5c8;border-color:#d8924d;color:#784321;box-shadow:0 2px 0 #d8924d20}
+.season-toggle[aria-pressed=true] .season-state{background:#894c32;color:#fff5df}
+body.halloween{--ink:#47334b;--green:#805039;--cream:#fbf2e3;--line:#e9dcc9;--coral:#e68a3d;background-image:radial-gradient(ellipse at 0 50%,#e9d9ec66,transparent 38%),radial-gradient(ellipse at 100% 0,#f6d69466,transparent 40%)}
+.halloween .brand-light{color:#b56630}
+.halloween .brand-icon,.halloween .mini-block{border-radius:46%;position:relative;background:#e99546;box-shadow:inset 6px 0 #ffffff17,inset -6px 0 #9e482524,inset 0 -3px #9e482524}
+.halloween .brand-icon:before,.halloween .mini-block:before,.halloween .discovery-number:before{content:'';position:absolute;top:-6px;left:46%;width:6px;height:10px;border-radius:3px 1px;background:#6e8546;transform:rotate(12deg)}
+.halloween .game-card{background:#fffbf3;border-color:#e4d4c0;box-shadow:0 4px 0 #e9dac6,0 12px 40px #57354c10}
+.halloween .next{background:#fbe5c8;border-color:#edce9e}
+.halloween .stat.best strong{color:#987749}
+.halloween .board-wrap{background:#2e253a;border-color:#55405a;box-shadow:inset 0 -5px 0 #211b2d}
+.halloween .board-wrap:before{background:radial-gradient(ellipse at 20% 0,#79516e50,transparent 70%)}
+.halloween .board-wrap:after{content:'';position:absolute;right:24px;top:19px;width:30px;height:30px;border-radius:50%;box-shadow:7px 4px 0 #f1d09780;transform:rotate(-23deg);pointer-events:none}
+.halloween .board-tip h1{color:#f0c895}
+.halloween .board-tip p,.halloween .first-hint{color:#c8afc7}
+.halloween .tiny-star{color:#d7ad69}
+.halloween .drop-button,.halloween .primary{background:#925234;border-color:#7a432a;box-shadow:0 3px 0 #653622}
+.halloween .drop-button:hover,.halloween .primary:hover{background:#7d442d}
+.halloween .drop-button>span{color:#ffe6b9}
+.halloween .intro-note h2>span{color:#ad7545}
+.halloween .discovery-card{background:#f5e6d0;border-color:#e8d3b3}
+.halloween .discovery-number{border-radius:46%;box-shadow:inset 10px 0 #fff2,inset -10px 0 #994a2822,0 7px 0 #e4ceb0}
+.halloween .discovery-number:before{top:-8px;width:8px;height:14px}
+.halloween .equation strong{color:#a45c31}
+.halloween .mini-equation{background:#f3e6d4}
+.halloween .mini-block.green{background:#f4a65a}
+.halloween .board-overlay{background:#2e253aeb;color:#fff0d1}
+.halloween .board-overlay p{color:#d0bcd0}
+.halloween .overlay-mark{color:#d9a868}
+.halloween .merge-message{color:#815031;background:#fff3dcf5;border-color:#e9c48d}
+.halloween .toast{background:#62416a;color:#fff1db}
+.halloween button:focus-visible,.halloween select:focus-visible,.halloween a:focus-visible,.halloween canvas:focus-visible{outline-color:#ce8b42}
+@media(max-width:760px){.season-bar{padding:0 1px 10px;gap:6px}.season-bar>span{font-size:9px}.season-toggle{font-size:10px;gap:5px;padding:5px 7px}.season-toggle svg{width:16px;height:16px}#board{max-height:calc(100svh - 340px)}}
+@media(max-width:350px){.season-bar>span{max-width:95px;line-height:1.5}}

@@ -14,18 +14,28 @@
   let score = 0, best = Number(prefs.best) || 0, biggest = 2, drops = 0;
   let max = [5,10,11,12,20].includes(prefs.max) ? prefs.max : 10;
   let mode = prefs.mode === 'challenge' ? 'challenge' : 'unlimited';
+  let halloween = prefs.halloween === true;
   let sound = prefs.sound === true, paused = false, gameOver = false, modalPaused = false;
   let current = 2, next = 4, aim = W / 2, simTime = 0, cooldown = 0;
   let pieces = [], particles = [], floaters = [], mergeQueue = [], discovered = new Set([1,2]);
   let pendingMerge = new Set(), lastMergeAt = -9999, combo = 0, lastAnnounce = 0;
   let audio, toastTimer, messageTimer, savedAt = 0;
 
-  function colors(n) { return palette[n <= 12 ? n : 1 + (Math.floor(Math.log2(n)) * 3 + n) % 10]; }
+  const pumpkinPalette = [['#ffb45d','#e57825'], ['#ffa249','#d8621d'], ['#f4bf67','#dc8b30'], ['#f4a65a','#cf6b24']];
+  const physics = {
+    classic: { restitution:.22, friction:.48, frictionStatic:.8, frictionAir:.012, sleepThreshold:70 },
+    halloween: { restitution:.3, friction:.28, frictionStatic:.4, frictionAir:.004, sleepThreshold:100 }
+  };
+  function colors(n) {
+    if (halloween && n !== 11 && n !== 12) return pumpkinPalette[(n - 1) % pumpkinPalette.length];
+    return palette[n <= 12 ? n : 1 + (Math.floor(Math.log2(n)) * 3 + n) % 10];
+  }
+  function applyPhysics(body) { Object.assign(body, physics[halloween ? 'halloween' : 'classic']); }
   function radius(n) { return Math.min(48, 22 + Math.log2(n) * 2.15); }
   function clampX(x, n = current) { const r = radius(n); return Math.max(r + 7, Math.min(W - r - 7, x)); }
   function save() {
     try {
-      localStorage.setItem(STORAGE, JSON.stringify({ best, max, mode, sound,
+      localStorage.setItem(STORAGE, JSON.stringify({ best, max, mode, sound, halloween,
         session: !gameOver ? { score, biggest, drops, current, next, aim, discovered: [...discovered], pieces: pieces.filter(b => b.position.y > 15).map(b => ({ n:b.number, x:b.position.x, y:b.position.y, angle:b.angle })) } : null
       }));
     } catch {}
@@ -52,6 +62,9 @@
     $('sound').setAttribute('aria-pressed', String(sound)); $('sound').setAttribute('aria-label', sound ? 'Turn sound off' : 'Turn sound on'); $('sound').title = sound ? 'Turn sound off' : 'Turn sound on';
   }
   function updateUI() {
+    document.body.classList.toggle('halloween', halloween);
+    $('halloween').setAttribute('aria-pressed', String(halloween));
+    $('halloween-state').textContent = halloween ? 'On' : 'Off';
     $('score').textContent = score.toLocaleString(); $('best').textContent = best.toLocaleString(); $('biggest').textContent = biggest.toLocaleString();
     $('range').value = max; $('drop-value').textContent = current;
     $('drop').setAttribute('aria-label', `Drop number ${current}`);
@@ -74,7 +87,8 @@
   }
   function makePiece(n,x,y,angle=0) {
     const r = radius(n);
-    const body = Bodies.circle(clampX(x,n),y,r,{restitution:.22,friction:.48,frictionStatic:.8,frictionAir:.012, density:.0018, sleepThreshold:70});
+    const body = Bodies.circle(clampX(x,n),y,r,{density:.0018});
+    applyPhysics(body);
     body.number = n; body.r = r; body.born = simTime; body.overflow = 0;
     Body.setAngle(body,angle); pieces.push(body); Composite.add(engine.world,body); return body;
   }
@@ -98,7 +112,10 @@
       const lowest=[...pieces].sort((a,b)=>b.position.y-a.position.y).slice(0,Math.max(4,Math.floor(pieces.length*.2)));
       lowest.forEach(b=>removePiece(b));toast('A little more room to keep growing!');
     }
-    const b=makePiece(current,aim,48);Body.setVelocity(b,{x:0,y:1.4});playTone(current);drops++;current=next;next=randomNumber();aim=clampX(aim);cooldown=simTime+440;updateUI();save();
+    const b=makePiece(current,aim,48);
+    Body.setVelocity(b,{x:0,y:1.4});
+    if (halloween) Body.setAngularVelocity(b,(drops % 2 ? -1 : 1) * .025);
+    playTone(current);drops++;current=next;next=randomNumber();aim=clampX(aim);cooldown=simTime+440;updateUI();save();
   }
   function removePiece(b) { Composite.remove(engine.world,b);pieces=pieces.filter(p=>p!==b); }
   function scheduleMerges(event) {
@@ -113,7 +130,8 @@
     if (!pieces.includes(a)||!pieces.includes(b)) return;
     const n=a.number*2,x=clampX((a.position.x+b.position.x)/2,n),y=Math.min(H-radius(n)-1,(a.position.y+b.position.y)/2);
     removePiece(a);removePiece(b);
-    const child=makePiece(n,x,y);Body.setVelocity(child,{x:(a.velocity.x+b.velocity.x)*.12,y:-1.4});
+    const child=makePiece(n,x,y);Body.setVelocity(child,{x:(a.velocity.x+b.velocity.x)*(halloween ? .3 : .12),y:-1.4});
+    if (halloween) Body.setAngularVelocity(child,(a.angularVelocity+b.angularVelocity)*.5);
     score+=n*10;best=Math.max(best,score);biggest=Math.max(biggest,n);discovered.add(n);combo=simTime-lastMergeAt<1200?combo+1:1;lastMergeAt=simTime;
     const message=`${n/2} + ${n/2} = ${n}`;
     $('merge-message').textContent=combo>1?`${message} · ${combo}× combo!`:message;
@@ -129,6 +147,7 @@
   }
   function finishGame() { gameOver=true;$('end-summary').textContent=`${score.toLocaleString()} points. A biggest number of ${biggest}. Beautifully doubled.`;$('end-overlay').hidden=false;$('drop').disabled=true;announce(`Game complete. Score ${score}.`);save(); }
   function drawCharacter(c,n,x,y,r,angle=0,opacity=1) {
+    if (halloween) { drawPumpkin(c,n,x,y,r,angle,opacity); return; }
     const [light,dark]=colors(n);c.save();c.translate(x,y);c.rotate(angle);c.globalAlpha=opacity;
     // Soft, original number characters with a gently rounded silhouette.
     const size=r*1.84,left=-size/2,top=-size/2,corner=size*.32;
@@ -146,19 +165,49 @@
     c.beginPath();c.arc(0,ey+r*.055,r*.1,.18,Math.PI-.18);c.strokeStyle='#43513c';c.lineWidth=Math.max(1,r*.04);c.stroke();
     for(const e of [-r*.48,r*.48]){c.beginPath();c.ellipse(e,ey+r*.13,r*.11,r*.055,0,0,Math.PI*2);c.fillStyle='#fff2d53e';c.fill();}c.restore();
   }
+  function drawPumpkin(c,n,x,y,r,angle=0,opacity=1) {
+    const [light,dark]=colors(n);
+    c.save();c.translate(x,y);c.rotate(angle);c.globalAlpha=opacity;
+    // The round body follows its circular collider; the little stem is decorative.
+    c.beginPath();c.moveTo(-r*.12,-r*.73);c.lineTo(-r*.16,-r*1.13);c.quadraticCurveTo(r*.03,-r*1.2,r*.11,-r*1.1);c.lineTo(r*.06,-r*.72);c.closePath();
+    c.fillStyle='#6e8546';c.fill();c.strokeStyle='#405b33';c.lineWidth=1.5;c.stroke();
+    c.beginPath();c.moveTo(r*.02,-r*.9);c.quadraticCurveTo(r*.22,-r*1.27,r*.45,-r*1.07);c.quadraticCurveTo(r*.34,-r*.82,r*.02,-r*.9);c.fillStyle='#91a854';c.fill();
+    const grad=c.createLinearGradient(-r*.3,-r,r*.4,r);grad.addColorStop(0,light);grad.addColorStop(1,dark);
+    c.beginPath();c.moveTo(0,-r*.8);
+    c.bezierCurveTo(r*.48,-r*1.02,r*1.02,-r*.7,r,-r*.02);
+    c.bezierCurveTo(r*1.02,r*.64,r*.5,r*1.02,0,r*.88);
+    c.bezierCurveTo(-r*.5,r*1.02,-r*1.02,r*.64,-r,-r*.02);
+    c.bezierCurveTo(-r*1.02,-r*.7,-r*.48,-r*1.02,0,-r*.8);
+    c.closePath();c.shadowColor='#190e2940';c.shadowBlur=4;c.shadowOffsetY=3;c.fillStyle=grad;c.fill();c.shadowColor='transparent';
+    c.strokeStyle=dark;c.lineWidth=1.6;c.stroke();
+    c.strokeStyle='#8b3f2338';c.lineWidth=Math.max(1,r*.045);
+    for(const side of [-1,1]) {
+      c.beginPath();c.moveTo(side*r*.2,-r*.78);c.bezierCurveTo(side*r*.64,-r*.36,side*r*.65,r*.5,side*r*.22,r*.87);c.stroke();
+    }
+    c.beginPath();c.ellipse(-r*.32,-r*.56,r*.26,r*.07,-.45,0,Math.PI*2);c.fillStyle='#fff4c861';c.fill();
+    const digits=String(n).length;
+    c.fillStyle='#fff6d7';c.font=`1000 ${r*(digits===1?1.2:digits===2?.98:digits===3?.74:.56)}px ${roundFont}`;
+    c.textAlign='center';c.textBaseline='middle';c.shadowColor='#893b2544';c.shadowOffsetY=2;c.fillText(n,0,-r*.17);c.shadowColor='transparent';
+    c.fillStyle='#54302e';
+    for(const e of [-r*.27,r*.27]) {
+      c.beginPath();c.moveTo(e,r*.32);c.lineTo(e-r*.13,r*.53);c.quadraticCurveTo(e,r*.58,e+r*.13,r*.53);c.closePath();c.fill();
+    }
+    c.beginPath();c.moveTo(-r*.2,r*.65);c.quadraticCurveTo(0,r*.84,r*.2,r*.65);c.lineTo(r*.06,r*.68);c.lineTo(0,r*.62);c.lineTo(-r*.05,r*.69);c.closePath();c.fill();
+    c.restore();
+  }
   function draw() {
     ctx.setTransform(canvas.width/W,0,0,canvas.height/H,0,0);ctx.clearRect(0,0,W,H);
-    ctx.strokeStyle='#bbd2c520';ctx.lineWidth=.7;ctx.beginPath();for(let x=0;x<=W;x+=26){ctx.moveTo(x,0);ctx.lineTo(x,H);}for(let y=0;y<=H;y+=26){ctx.moveTo(0,y);ctx.lineTo(W,y);}ctx.stroke();
-    if(mode==='challenge') {ctx.save();ctx.setLineDash([4,6]);ctx.strokeStyle=pieces.some(b=>b.position.y-b.r<LINE&&simTime-b.born>1800)?'#d9826e':'#b0c5b68a';ctx.beginPath();ctx.moveTo(12,LINE);ctx.lineTo(W-12,LINE);ctx.stroke();ctx.setLineDash([]);ctx.font=`8px ${roundFont}`;ctx.fillStyle='#92aa97';ctx.fillText('KEEP BELOW THE LINE',13,LINE-9);ctx.restore();}
+    ctx.strokeStyle=halloween?'#d6b5de13':'#bbd2c520';ctx.lineWidth=.7;ctx.beginPath();for(let x=0;x<=W;x+=26){ctx.moveTo(x,0);ctx.lineTo(x,H);}for(let y=0;y<=H;y+=26){ctx.moveTo(0,y);ctx.lineTo(W,y);}ctx.stroke();
+    if(mode==='challenge') {ctx.save();ctx.setLineDash([4,6]);ctx.strokeStyle=pieces.some(b=>b.position.y-b.r<LINE&&simTime-b.born>1800)?'#d9826e':'#b0c5b68a';ctx.beginPath();ctx.moveTo(12,LINE);ctx.lineTo(W-12,LINE);ctx.stroke();ctx.setLineDash([]);ctx.font=`8px ${roundFont}`;ctx.fillStyle=halloween?'#c8afc7':'#92aa97';ctx.textAlign='left';ctx.fillText('KEEP BELOW THE LINE',13,LINE-9);ctx.restore();}
     if (!gameOver) {
       let bottom=H-radius(current);for(const b of pieces){const d=Math.abs(b.position.x-aim);if(d<b.r+radius(current)-4)bottom=Math.min(bottom,b.position.y-b.r-radius(current));}
-      ctx.save();ctx.setLineDash([3,6]);ctx.strokeStyle='#86b09a66';ctx.lineWidth=1.4;ctx.beginPath();ctx.moveTo(aim,80);ctx.lineTo(aim,Math.max(85,bottom));ctx.stroke();ctx.restore();
+      ctx.save();ctx.setLineDash([3,6]);ctx.strokeStyle=halloween?'#efb47777':'#86b09a66';ctx.lineWidth=1.4;ctx.beginPath();ctx.moveTo(aim,80);ctx.lineTo(aim,Math.max(85,bottom));ctx.stroke();ctx.restore();
       ctx.fillStyle='#739c8225';ctx.beginPath();ctx.ellipse(aim,H-8,radius(current)*.65,3.5,0,0,Math.PI*2);ctx.fill();
       drawCharacter(ctx,current,aim,44+(!reducedMotion?Math.sin(simTime*.002)*2:0),radius(current),0,simTime<cooldown?.45:.95);
     }
     for(const b of pieces){const age=simTime-b.born;const grow=age<180? .75+.25*Math.min(1,age/180):1;drawCharacter(ctx,b.number,b.position.x,b.position.y,b.r*grow,b.angle);}
     for(const p of particles){ctx.globalAlpha=Math.max(0,p.life);ctx.fillStyle=p.c;ctx.save();ctx.translate(p.x,p.y);ctx.rotate(p.life*5);ctx.fillRect(-p.size/2,-p.size/2,p.size,p.size);ctx.restore();}
-    ctx.textAlign='center';ctx.font=`900 16px ${roundFont}`;for(const f of floaters){ctx.globalAlpha=Math.max(0,f.life);ctx.fillStyle='#417650';ctx.fillText(f.text,f.x,f.y);}ctx.globalAlpha=1;
+    ctx.textAlign='center';ctx.font=`900 16px ${roundFont}`;for(const f of floaters){ctx.globalAlpha=Math.max(0,f.life);ctx.fillStyle=halloween?'#ffda8d':'#417650';ctx.fillText(f.text,f.x,f.y);}ctx.globalAlpha=1;
   }
   function step() {
     simTime+=1000/60;Engine.update(engine,1000/60);
@@ -193,13 +242,17 @@
   });
   $('drop').addEventListener('click',drop);$('pause').addEventListener('click',()=>{if(!gameOver)setPaused(!paused);});$('resume').addEventListener('click',()=>setPaused(false));$('play-again').addEventListener('click',newGame);
   $('sound').addEventListener('click',()=>{sound=!sound;updateSound();playTone(4,true);save();});
+  $('halloween').addEventListener('click',()=>{
+    halloween=!halloween;pieces.forEach(applyPhysics);updateUI();save();
+    toast(halloween?'Welcome to the pumpkin patch! A little more roll, the same doubles.':'Classic numbers are back. Your board stays.');
+  });
   function closeDialog() { $('dialog').close();modalPaused=false; }
   function showDialog(html) {modalPaused=true;$('dialog-content').innerHTML=html;$('dialog').showModal();}
   $('dialog').querySelector('.dialog-close').addEventListener('click',closeDialog);
   $('dialog').addEventListener('close',()=>{modalPaused=false;});
   $('dialog').addEventListener('click',e=>{if(e.target===$('dialog')){const r=$('dialog').getBoundingClientRect();if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom)closeDialog();}});
   $('help').addEventListener('click',()=>{
-    showDialog('<span class="dialog-symbol">✦</span><h2>A little drop.<br>A lovely double.</h2><p>Move your number left or right, then tap the board or press <strong>Drop</strong>. On a keyboard, use the arrow keys and Space.</p><p>When two matching numbers touch, they become their double. <strong>2 + 2 = 4. Then 4 + 4 = 8!</strong> Every merge earns ten times the new number in points.</p><p><strong>Unlimited play</strong> makes space at the bottom when the board fills up. In <strong>Challenge</strong>, keep your stack below the dotted line.</p><p>Your game and personal best are saved on this device. Press P to pause, any time.</p><button class="primary" id="got-it">Let’s play <span>→</span></button>');$('got-it').onclick=closeDialog;
+    showDialog('<span class="dialog-symbol">✦</span><h2>A little drop.<br>A lovely double.</h2><p>Move your number left or right, then tap the board or press <strong>Drop</strong>. On a keyboard, use the arrow keys and Space.</p><p>When two matching numbers touch, they become their double. <strong>2 + 2 = 4. Then 4 + 4 = 8!</strong> Every merge earns ten times the new number in points.</p><p><strong>Unlimited play</strong> makes space at the bottom when the board fills up. In <strong>Challenge</strong>, keep your stack below the dotted line.</p><p>Turn on <strong>Halloween</strong> for numbered pumpkins with extra roll. Switch any time without clearing your board.</p><p>Your game and personal best are saved on this device. Press P to pause, any time.</p><button class="primary" id="got-it">Let’s play <span>→</span></button>');$('got-it').onclick=closeDialog;
   });
   function confirmReset(onConfirm) {
     if(drops===0){onConfirm();return;}

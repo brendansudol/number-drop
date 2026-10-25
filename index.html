@@ -33,6 +33,10 @@
           <button id="mode" class="mode-button" aria-label="Unlimited play. Change game mode." title="Change game mode"><span>∞</span> Unlimited play</button>
           <div class="game-tools"><button id="pause" class="small-button" aria-label="Pause game" title="Pause game"><svg viewBox="0 0 24 24"><path d="M8 5v14M16 5v14"/></svg></button><button id="restart" class="small-button" aria-label="Start a new game" title="New game"><svg viewBox="0 0 24 24"><path d="M4 9a8 8 0 1 1 0 6m0-11v5h5"/></svg></button></div>
         </div>
+        <div class="season-bar">
+          <span>Pumpkins &amp; a little extra roll</span>
+          <button id="halloween" class="season-toggle" aria-label="Halloween mode" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 6c-3-3-9-1-9 6s5 9 9 7c4 2 9-1 9-7s-6-9-9-6Z"/><path d="M12 6c-4 3-4 10 0 13m0-13c4 3 4 10 0 13m0-13V3l3-1"/></svg><span>Halloween</span><span class="season-state" id="halloween-state">Off</span></button>
+        </div>
         <div class="board-wrap" id="board-wrap">
           <canvas id="board" width="960" height="1080" tabindex="0" aria-label="Game board. Move with arrow keys, then press Space to drop. Matching numbers double."></canvas>
           <div class="board-tip" id="board-tip"><span class="tiny-star">✦</span><h1>Good things come in doubles.</h1><p>Move to aim. Tap to drop.<br>Match two numbers and watch them grow.</p><span class="first-hint">Start with 2 + 2 <span>↓</span></span></div>

@@ -11,6 +11,7 @@ A playful number-doubling game with bouncing characters, chain merges, and mobil
 - Matching numbers combine into their double: **2 + 2 = 4**, then **4 + 4 = 8**. Each merge earns ten times the new number in points.
 - **Unlimited play** makes room at the bottom when the board fills. **Challenge** ends when a settled number stays above the dotted line.
 - Choose drops from 1–5, 1–10, 1–11, 1–12, or 1–20. Your game and personal best are saved in this browser, on this device.
+- Turn on **Halloween** above the board for numbered pumpkins, a moonlit board, and a little extra rolling and bounce. Switch it on or off without losing progress; your choice is saved. It works with every number range and both play modes. 11 stays orange and 12 stays red.
 
 ## Run locally
 
